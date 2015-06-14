@@ -18,9 +18,13 @@ void AOpenCVHUD::DrawHUD()
 	if (nullptr != Canvas)
 	{
 		const FVector2D ScreenSize(Canvas->SizeX, Canvas->SizeY);
+#if 1
 		const auto Texture = OpenCVComp->Texture2D;
 		const FVector2D TextureSize(Texture->GetSurfaceWidth(), Texture->GetSurfaceHeight());
 		FCanvasTileItem Item((ScreenSize - TextureSize) * 0.5f, Texture->Resource, FLinearColor::White);
+#else
+		FCanvasTileItem Item(FVector2D::ZeroVector, OpenCVComp->Texture2D->Resource, ScreenSize, FLinearColor::White);
+#endif
 		Item.BlendMode = SE_BLEND_Opaque;
 		Canvas->DrawItem(Item);
 	}
