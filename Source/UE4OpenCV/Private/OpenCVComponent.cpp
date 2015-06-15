@@ -71,6 +71,13 @@ void UOpenCVComponent::BeginPlay()
 			if (Kernel.run(ARRAY_COUNT(Threads), Threads, nullptr, true))
 			{
 				const auto Result = Mat.getMat(cv::ACCESS_READ);
+
+				//!< OpenCV ‚Ì‘€ì‚ð‰Á‚¦‚Ä‚Ý‚é
+				//!< Add some OpenCV operations
+				cv::putText(Mat, cv::String("Hello OpenCV"), cv::Point(0, 255), CV_FONT_HERSHEY_PLAIN, 2.0, cv::Scalar(255, 0, 0));
+				cv::rectangle(Mat, cv::Point(64, 64), cv::Point(96, 96), cv::Scalar(0, 255, 0));
+				cv::circle(Mat, cv::Point(128, 128), 32, cv::Scalar(0, 0, 255));
+
 				//cv::imshow("Result", Result);
 
 				//!< cv::Mat -> TArray<FColor>
