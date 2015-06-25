@@ -23,6 +23,12 @@ UOpenCVComponent::UOpenCVComponent()
 	PrimaryComponentTick.bCanEverTick = true;
 
 	// ...
+
+	Texture2D = UTexture2D::CreateTransient(256, 256);
+	if (nullptr != Texture2D)
+	{
+		Texture2D->UpdateResource();
+	}
 }
 
 
@@ -33,83 +39,84 @@ void UOpenCVComponent::BeginPlay()
 
 	// ...
 	
-	if (cv::ocl::haveOpenCL())
+	if (nullptr != Texture2D)
 	{
-		cv::ocl::Context Context;
-		if (Context.create(cv::ocl::Device::TYPE_GPU))
+		if (cv::ocl::haveOpenCL())
 		{
-			cv::ocl::Device(Context.device(0));
-
-			//!< シンプルな OpenCL コード
-			//!< Simple OpenCL Code
-			const cv::String Code = "__kernel void main(__global uchar* dst, const int pitch, const int offset, const int rows, const int cols) {"
-				"const int x = get_global_id(0);"
-				"const int y = get_global_id(1);"
-				"const int index = mad24(y, pitch, x + offset);"
-				"dst[index] = ((x % 2) || (y % 2)) ? (((x % 256) >> 1) + ((y % 256) >> 1)) : 0;"
-				"}";
-			const cv::ocl::ProgramSource ProgramSource(Code);
-
-			//!< OpenCL の ビルド
-			//!< Build OpenCL
-			const cv::String Buildopt = "";
-			cv::String Errmsg;
-			const auto Program = Context.getProg(ProgramSource, Buildopt, Errmsg);
-
-			//!< 結果格納用
-			//!< Result destination
-			const auto Mat = cv::UMat(256, 256, CV_8U, cv::ACCESS_WRITE, cv::USAGE_ALLOCATE_DEVICE_MEMORY);
-
-			//!< OpenCL 関数名と引数
-			//!< OpenCL function name and arguments
-			cv::ocl::Kernel Kernel("main", Program);
-			Kernel.args(cv::ocl::KernelArg::ReadWrite(Mat));
-
-			//!< OpenCL の実行
-			//!< Execute OpenCL
-			size_t Threads[] = { 256, 256, 1 };
-			if (Kernel.run(ARRAY_COUNT(Threads), Threads, nullptr, true))
+			cv::ocl::Context Context;
+			if (Context.create(cv::ocl::Device::TYPE_GPU))
 			{
-				const auto Result = Mat.getMat(cv::ACCESS_READ);
+				cv::ocl::Device(Context.device(0));
 
-				//!< OpenCV の操作を加えてみる
-				//!< Add some OpenCV operations
-				cv::putText(Mat, cv::String("Hello OpenCV"), cv::Point(0, 255), CV_FONT_HERSHEY_PLAIN, 2.0, cv::Scalar(255, 0, 0));
-				cv::rectangle(Mat, cv::Point(64, 64), cv::Point(96, 96), cv::Scalar(0, 255, 0));
-				cv::circle(Mat, cv::Point(128, 128), 32, cv::Scalar(0, 0, 255));
+				//!< シンプルな OpenCL コード
+				//!< Simple OpenCL Code
+				const cv::String Code = "__kernel void main(__global uchar* dst, const int pitch, const int offset, const int rows, const int cols) {"
+					"const int2 uv = { get_global_id(0), get_global_id(1) };"
+					"const int2 dim = { rows, cols };"
+					"const int2 grid = { 16, 16 };"
+					"const int2 repeate = dim / grid;"
+					"const int index = mad24(uv.y, pitch, uv.x + offset);"
+					"dst[index] = ((uv.x % grid.x) * repeate.x >> 1) + ((uv.y % grid.y) * repeate.y >> 1);"
+					"}";
+				const cv::ocl::ProgramSource ProgramSource(Code);
 
-				//cv::imshow("Result", Result);
+				//!< OpenCL の ビルド
+				//!< Build OpenCL
+				const cv::String Buildopt = "";
+				cv::String Errmsg;
+				const auto Program = Context.getProg(ProgramSource, Buildopt, Errmsg);
 
-				//!< cv::Mat -> TArray<FColor>
-				Colors.Empty();
-				Colors.Reserve(256 * 256);
-				for (auto i = 0; i < 256; ++i)
+				const auto Width = Texture2D->GetSizeX();
+				const auto Height = Texture2D->GetSizeY();
+				//!< 結果格納用
+				//!< Result destination
+				const auto Mat = cv::UMat(Height, Width, CV_8U, cv::ACCESS_WRITE, cv::USAGE_ALLOCATE_DEVICE_MEMORY);
+
+				//!< OpenCL 関数名と引数
+				//!< OpenCL function name and arguments
+				cv::ocl::Kernel Kernel("main", Program);
+				Kernel.args(cv::ocl::KernelArg::ReadWrite(Mat));
+
+				//!< OpenCL の実行
+				//!< Execute OpenCL
+				size_t Threads[] = { Width, Height, 1 };
+				if (Kernel.run(ARRAY_COUNT(Threads), Threads, nullptr, true))
 				{
-					for (auto j = 0; j < 256; ++j)
-					{
-						const auto Value = Result.data[i * 256 + j];
-						Colors.Add(FColor(Value, Value, Value));
-					}
-				}
+					const auto Result = Mat.getMat(cv::ACCESS_READ);
 
-				if (nullptr == Texture2D)
-				{
-					Texture2D = UTexture2D::CreateTransient(256, 256);
-					Texture2D->UpdateResource();
-				}
+					//!< OpenCV の操作を加えてみる
+					//!< Add some OpenCV operations
+					cv::putText(Mat, cv::String("Hello OpenCV"), cv::Point(0, 255), CV_FONT_HERSHEY_PLAIN, 2.0, cv::Scalar(255, 0, 0));
+					cv::rectangle(Mat, cv::Point(64 + 5, 64 + 5), cv::Point(96 + 5, 96 + 5), cv::Scalar(0, 255, 0));
+					cv::circle(Mat, cv::Point(128, 128), 32, cv::Scalar(0, 0, 255));
 
-				//!< UTexture2Dを更新
-				//!< Update UTexture2D
-				ENQUEUE_UNIQUE_RENDER_COMMAND_TWOPARAMETER(UpdateTexture2D,
-					UOpenCVComponent*, This, this,
-					UTexture2D*, Tex, Texture2D,
+					//cv::imshow("Result", Result);
+
+					//!< cv::Mat -> TArray<FColor>
+					Colors.Empty();
+					Colors.Reserve(Width * Height);
+					for (auto i = 0; i < Height; ++i)
 					{
-						const auto Width = Tex->GetSizeX();
-						const auto Height = Tex->GetSizeY();
-						const auto Pitch = GPixelFormats[Tex->GetPixelFormat()].BlockBytes * Width;
-						RHIUpdateTexture2D(Tex->Resource->TextureRHI->GetTexture2D(), 0, FUpdateTextureRegion2D(0, 0, 0, 0, Width, Height), Pitch, reinterpret_cast<const uint8*>(&This->Colors[0]));
+						for (auto j = 0; j < Width; ++j)
+						{
+							const auto Value = Result.data[i * Width + j];
+							Colors.Add(FColor(Value, Value, Value));
+						}
 					}
-				);
+
+					//!< UTexture2Dを更新
+					//!< Update UTexture2D
+					ENQUEUE_UNIQUE_RENDER_COMMAND_TWOPARAMETER(UpdateTexture2D,
+						UOpenCVComponent*, This, this,
+						UTexture2D*, Tex, Texture2D,
+						{
+							const auto Width = Tex->GetSizeX();
+							const auto Height = Tex->GetSizeY();
+							const auto Pitch = GPixelFormats[Tex->GetPixelFormat()].BlockBytes * Width;
+							RHIUpdateTexture2D(Tex->Resource->TextureRHI->GetTexture2D(), 0, FUpdateTextureRegion2D(0, 0, 0, 0, Width, Height), Pitch, reinterpret_cast<const uint8*>(&This->Colors[0]));
+						}
+					);
+				}
 			}
 		}
 	}
