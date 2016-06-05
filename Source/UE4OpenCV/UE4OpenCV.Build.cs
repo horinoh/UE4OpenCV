@@ -27,7 +27,10 @@ public class UE4OpenCV : ModuleRules
 
 		if(UnrealTargetPlatform.Win64 == Target.Platform)
 		{
-			var ModulePath = Path.GetDirectoryName(RulesCompiler.GetModuleFilename(GetType().Name));
+			FileReference FR;
+            UProjectInfo.TryGetProjectForTarget("UE4OpenCV", out FR);
+            RulesAssembly RA = RulesCompiler.CreateProjectRulesAssembly(FR);
+            var ModulePath = Path.GetDirectoryName(RA.GetModuleFileName(GetType().Name).CanonicalName);
 			var ThirdPartyPath = Path.GetFullPath(Path.Combine(ModulePath, "..", "..", "ThirdParty"));
 			var BasePath = Path.Combine(ThirdPartyPath, "opencv", "build");
 
