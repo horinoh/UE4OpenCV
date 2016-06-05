@@ -32,20 +32,20 @@ public class UE4OpenCV : ModuleRules
             RulesAssembly RA = RulesCompiler.CreateProjectRulesAssembly(FR);
             var ModulePath = Path.GetDirectoryName(RA.GetModuleFileName(GetType().Name).CanonicalName);
 			var ThirdPartyPath = Path.GetFullPath(Path.Combine(ModulePath, "..", "..", "ThirdParty"));
-			var BasePath = Path.Combine(ThirdPartyPath, "opencv", "build");
+			var BasePath = Path.Combine(ThirdPartyPath, "opencv", "install");
 
-			var Configuration = (Target.Configuration == UnrealTargetConfiguration.Debug) ? "Debug" : "Release";
-			var LibDllConfiguration = (Target.Configuration == UnrealTargetConfiguration.Debug) ? "d" : "";
+			var Configuration = (Target.Configuration == UnrealTargetConfiguration.Debug) ? "d" : "";
 
-			var LibPath = Path.Combine(BasePath, "lib", Configuration);
-			PublicLibraryPaths.Add(LibPath);
+            var LibPath = Path.Combine(BasePath, "x64", "vc14", "lib");
+            var DllPath = Path.Combine(BasePath, "x64", "vc14", "bin");
+            PublicLibraryPaths.Add(LibPath);
 
-			var LibDllNames = new string[] { 
+			var Names = new string[] { 
 				  "opencv_calib3d",
 				  "opencv_core",
 				  "opencv_features2d",
 				  "opencv_flann",
-				  "opencv_hal",
+				  //"opencv_hal",
 				  "opencv_highgui",
 				  "opencv_imgcodecs",
 				  "opencv_imgproc",
@@ -55,19 +55,23 @@ public class UE4OpenCV : ModuleRules
 				  "opencv_shape",
 				  "opencv_stitching",
 				  "opencv_superres",
-				  "opencv_ts",
+				  //"opencv_ts",
 				  "opencv_video",
 				  "opencv_videoio",
 				  "opencv_videostab",
 			};
-			var Version = "300";
-			foreach (var i in LibDllNames)
+			var Version = "310";
+            foreach (var i in Names)
 			{
-				var LibDllName = i + Version + LibDllConfiguration;
-				PublicAdditionalLibraries.Add(Path.Combine(LibPath, LibDllName + ".lib"));
-				PublicDelayLoadDLLs.Add(LibDllName + ".dll");
-			}
-			PublicIncludePaths.Add(Path.Combine(BasePath, "include"));
+				var Name = i + Version + Configuration;
+				PublicAdditionalLibraries.Add(Path.Combine(LibPath, Name + ".lib"));
+                PublicDelayLoadDLLs.Add(Name + ".dll");
+            }
+
+            PublicAdditionalLibraries.Add(Path.Combine(LibPath, "opencv_ts" + Version + Configuration + ".lib"));
+            PublicDelayLoadDLLs.Add("opencv_ffmpeg310_64" + ".dll");
+
+            PublicIncludePaths.Add(Path.Combine(BasePath, "include"));
 		}
 	}
 }

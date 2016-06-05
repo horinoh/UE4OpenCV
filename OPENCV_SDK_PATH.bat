@@ -1,0 +1,1 @@
+@setx OPENCV_SDK_PATH "D:\opencv\install"

@@ -7,10 +7,11 @@ class FOpenCVGameModuleImpl : public FDefaultGameModuleImpl
 public:
 	virtual void StartupModule()
 	{
+		const auto DllRoot = FPaths::GameContentDir() / TEXT("../ThirdParty/opencv/install/x64/vc14/bin/");
 #if UE_BUILD_DEBUG
-		const auto DllRoot = FPaths::GameContentDir() / TEXT("../ThirdParty/opencv/build/bin") / TEXT("Debug/");
+		const auto Configuration = "d";
 #else
-		const auto DllRoot = FPaths::GameContentDir() / TEXT("../ThirdParty/opencv/build/bin") / TEXT("Release/");
+		const auto Configuration = "";
 #endif
 		FPlatformProcess::PushDllDirectory(*DllRoot);
 		{
@@ -34,14 +35,13 @@ public:
 				"opencv_videoio",
 				"opencv_videostab",
 			};
-			const auto Version = "300";
+			const auto Version = "310";
 			for (const auto i : DllNames)
 			{
-#if UE_BUILD_DEBUG
-				DllHandles.Add(FPlatformProcess::GetDllHandle(*(DllRoot + i + Version + "d.dll")));
-#else
-				DllHandles.Add(FPlatformProcess::GetDllHandle(*(DllRoot + i + Version + ".dll")));
-#endif
+				DllHandles.Add(FPlatformProcess::GetDllHandle(*(DllRoot + i + Version + Configuration + ".dll")));
+
+				DllHandles.Add(FPlatformProcess::GetDllHandle(*(DllRoot + "opencv_ffmpeg" + Version + "_64.dll")));
+				
 				check(nullptr != DllHandles.Last());
 			}
 		}

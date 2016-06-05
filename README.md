@@ -1,17 +1,28 @@
-# UE4OpenCV
+﻿# UE4OpenCV
 
-* http://opencv.org/ v3.0 を DL してビルド (download v3.0 and build)
-* コピーする (copy)
+## OpenCV をクローンしてビルド
+* https://github.com/Itseez/opencv からクローン
+* CMake
+    * Where is the source code にそのフォルダを指定
+    * Where to build the binary に適当なフォルダを指定 (例えば D:\opencv)
+    * Configure - Specify the generator for this project で Visual Studio 14 2015 Win64 を選択
+    * WITH_CUDA のチェックを外して Configure - Generate
+* Visual Studio
+    * opencv/OpenCV.sln が出来るので開いて CMakeTargets - INSTALL プロジェクトをビルド(Debug, Release)する
+    * opencv/install 以下へ色々出力される
+
+## 必要なものをコピーする
 ~~~
-copy C:\opencv\build\bin\Debug\*.dll UE4OpenCV\ThirdParty\opencv\build\bin\Debug\
-copy C:\opencv\build\bin\Release\*.dll UE4OpenCV\ThirdParty\opencv\build\bin\Release\
+copy opencv\install\include\* UE4OpenCV\ThirdParty\opencv\install\include\
+copy opencv\install\x64\vc14\lib\*.lib UE4OpenCV\ThirdParty\opencv\install\x64\vc14\lib\
+copy opencv\install\x64\vc14\bin\*.dll UE4OpenCV\ThirdParty\opencv\install\x64\vc14\bin\
 ~~~
+* opencv2/core/utilities.hpp の check() が UE4 の check() と被って、コンパイルが通らないのでコメントアウト
+	* 本当にコメントアウトしていいのかは分からない…
 ~~~
-copy C:\opencv\build\include\opencv\*.h UE4OpenCV\ThirdParty\opencv\build\include\opencv\
-copy C:\opencv\build\include\opencv2\* UE4OpenCV\ThirdParty\opencv\build\include\opencv2\
+#if defined(check)
+//#  warning Detected Apple 'check' macro ...
+#endif
+...
+//bool check() const;
 ~~~
-~~~
-copy C:\opencv\build\lib\Debug\*.lib UE4OpenCV\ThirdParty\opencv\build\lib\Debug\
-copy C:\opencv\build\lib\Release\*.lib UE4OpenCV\ThirdParty\opencv\build\lib\Release\
-~~~
-* .uproject を右クリック(right click .uproject) → Generate Visual Studio project files → .sln を開いてビルド (open .sln and build)
