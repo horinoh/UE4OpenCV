@@ -7,8 +7,10 @@
 @note UE4 の check() と被るので opencv2/core/utility.hpp の CommandLineParser::check() をコメントアウトした
 @note Because UE4 has check(), I comment out opencv2/core/utility.hpp : CommandLineParser::check()
 */
+//#define _CRT_SECURE_NO_WARNINGS
 #pragma warning(push)
 #pragma warning(disable : 4946)
+#pragma warning(disable : 4996)
 #include <opencv2/opencv.hpp>
 #pragma  warning(pop)
 #include <opencv2/core/ocl.hpp>
@@ -19,7 +21,7 @@ UOpenCVComponent::UOpenCVComponent()
 {
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
-	bWantsBeginPlay = true;
+	//bWantsBeginPlay = true;
 	PrimaryComponentTick.bCanEverTick = true;
 
 	// ...

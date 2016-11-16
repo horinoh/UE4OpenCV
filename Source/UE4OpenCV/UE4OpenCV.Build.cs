@@ -68,7 +68,7 @@ public class UE4OpenCV : ModuleRules
                 PublicDelayLoadDLLs.Add(Name + ".dll");
             }
 
-            PublicAdditionalLibraries.Add(Path.Combine(LibPath, "opencv_ts" + Version + Configuration + ".lib"));
+            //PublicAdditionalLibraries.Add(Path.Combine(LibPath, "opencv_ts" + Version + Configuration + ".lib"));
             PublicDelayLoadDLLs.Add("opencv_ffmpeg310_64" + ".dll");
 
             PublicIncludePaths.Add(Path.Combine(BasePath, "include"));

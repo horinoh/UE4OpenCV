@@ -1,12 +1,13 @@
 ﻿# UE4OpenCV
 
 ## OpenCV をクローンしてビルド
-* https://github.com/Itseez/opencv からクローン
+* https://github.com/opencv/opencv.git からクローン
 * CMake
     * Where is the source code にそのフォルダを指定
     * Where to build the binary に適当なフォルダを指定 (例えば D:\opencv)
     * Configure - Specify the generator for this project で Visual Studio 14 2015 Win64 を選択
-    * WITH_CUDA のチェックを外して Configure - Generate
+    * WITH_CUDA のチェックを外して 赤くなくなるまで Configure
+    * Generate
 * Visual Studio
     * opencv/OpenCV.sln が出来るので開いて CMakeTargets - INSTALL プロジェクトをビルド(Debug, Release)する
     * opencv/install 以下へ色々出力される
