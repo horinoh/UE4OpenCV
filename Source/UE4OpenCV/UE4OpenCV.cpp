@@ -35,7 +35,8 @@ public:
 				"opencv_videoio",
 				"opencv_videostab",
 			};
-			const auto Version = "310";
+			//const auto Version = "310";
+			const auto Version = "320";
 			for (const auto i : DllNames)
 			{
 				DllHandles.Add(FPlatformProcess::GetDllHandle(*(DllRoot + i + Version + Configuration + ".dll")));
