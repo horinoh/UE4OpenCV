@@ -3,18 +3,17 @@
 #include "UE4OpenCV.h"
 #include "OpenCVComponent.h"
 
-/**
-@note UE4 の check() と被るので opencv2/core/utility.hpp の CommandLineParser::check() をコメントアウトした
-@note Because UE4 has check(), I comment out opencv2/core/utility.hpp : CommandLineParser::check()
-*/
 //#define _CRT_SECURE_NO_WARNINGS
+#pragma push_macro("check")
+#undef check
 #pragma warning(push)
 #pragma warning(disable : 4946)
 #pragma warning(disable : 4996)
+#pragma warning(disable : 4668)
 #include <opencv2/opencv.hpp>
 #pragma  warning(pop)
+#pragma pop_macro("check")
 #include <opencv2/core/ocl.hpp>
-
 
 // Sets default values for this component's properties
 UOpenCVComponent::UOpenCVComponent()
