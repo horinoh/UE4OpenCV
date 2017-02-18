@@ -17,13 +17,3 @@
 copy opencv\install\include\* UE4OpenCV\ThirdParty\opencv\install\include\
 copy opencv\install\x64\vc14\lib\*.lib UE4OpenCV\ThirdParty\opencv\install\x64\vc14\lib\
 copy opencv\install\x64\vc14\bin\*.dll UE4OpenCV\ThirdParty\opencv\install\x64\vc14\bin\
-~~~
-* opencv2/core/utilities.hpp の check() が UE4 の check() と被って、コンパイルが通らないのでコメントアウト
-	* 本当にコメントアウトしていいのかは分からない…
-~~~
-#if defined(check)
-//#  warning Detected Apple 'check' macro ...
-#endif
-...
-//bool check() const;
-~~~
