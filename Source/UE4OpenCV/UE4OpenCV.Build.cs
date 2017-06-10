@@ -5,7 +5,7 @@ using System.IO;
 
 public class UE4OpenCV : ModuleRules
 {
-	public UE4OpenCV(TargetInfo Target)
+	public UE4OpenCV(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore",
 															"RHI", "RenderCore" });
