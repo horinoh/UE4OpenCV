@@ -81,43 +81,45 @@ void UOpenCVComponent::BeginPlay()
 				//!< OpenCL の実行
 				//!< Execute OpenCL
 				size_t Threads[] = { Width, Height, 1 };
-				if (Kernel.run(ARRAY_COUNT(Threads), Threads, nullptr, true))
+				if (!Kernel.run(ARRAY_COUNT(Threads), Threads, nullptr, true))
 				{
-					const auto Result = Mat.getMat(cv::ACCESS_READ);
-
-					//!< OpenCV の操作を加えてみる
-					//!< Add some OpenCV operations
-					cv::putText(Mat, cv::String("Hello OpenCV"), cv::Point(0, 255), CV_FONT_HERSHEY_PLAIN, 2.0, cv::Scalar(255, 0, 0));
-					cv::rectangle(Mat, cv::Point(64 + 5, 64 + 5), cv::Point(96 + 5, 96 + 5), cv::Scalar(0, 255, 0));
-					cv::circle(Mat, cv::Point(128, 128), 32, cv::Scalar(0, 0, 255));
-
-					//cv::imshow("Result", Result);
-
-					//!< cv::Mat -> TArray<FColor>
-					Colors.Empty();
-					Colors.Reserve(Width * Height);
-					for (auto i = 0; i < Height; ++i)
-					{
-						for (auto j = 0; j < Width; ++j)
-						{
-							const auto Value = Result.data[i * Width + j];
-							Colors.Add(FColor(Value, Value, Value));
-						}
-					}
-
-					//!< UTexture2Dを更新
-					//!< Update UTexture2D
-					ENQUEUE_UNIQUE_RENDER_COMMAND_TWOPARAMETER(UpdateTexture2D,
-						UOpenCVComponent*, This, this,
-						UTexture2D*, Tex, Texture2D,
-						{
-							const auto TexWidth = Tex->GetSizeX();
-							const auto TexHeight = Tex->GetSizeY();
-							const auto Pitch = GPixelFormats[Tex->GetPixelFormat()].BlockBytes * TexWidth;
-							RHIUpdateTexture2D(Tex->Resource->TextureRHI->GetTexture2D(), 0, FUpdateTextureRegion2D(0, 0, 0, 0, TexWidth, TexHeight), Pitch, reinterpret_cast<const uint8*>(&This->Colors[0]));
-						}
-					);
+					GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("OpenCL run failed"));
 				}
+
+				const auto Result = Mat.getMat(cv::ACCESS_READ);
+
+				//!< OpenCV の操作を加えてみる
+				//!< Add some OpenCV operations
+				cv::putText(Mat, cv::String("Hello OpenCV"), cv::Point(0, 255), CV_FONT_HERSHEY_PLAIN, 2.0, cv::Scalar(0, 127, 127));
+				cv::rectangle(Mat, cv::Point(64 + 5, 64 + 5), cv::Point(96 + 5, 96 + 5), cv::Scalar(0, 255, 0));
+				cv::circle(Mat, cv::Point(128, 128), 32, cv::Scalar(0, 0, 255));
+
+				//cv::imshow("Result", Result);
+
+				//!< cv::Mat -> TArray<FColor>
+				Colors.Empty();
+				Colors.Reserve(Width * Height);
+				for (auto i = 0; i < Height; ++i)
+				{
+					for (auto j = 0; j < Width; ++j)
+					{
+						const auto Value = Result.data[i * Width + j];
+						Colors.Add(FColor(Value, Value, Value));
+					}
+				}
+
+				//!< UTexture2Dを更新
+				//!< Update UTexture2D
+				ENQUEUE_UNIQUE_RENDER_COMMAND_TWOPARAMETER(UpdateTexture2D,
+					UOpenCVComponent*, This, this,
+					UTexture2D*, Tex, Texture2D,
+					{
+						const auto TexWidth = Tex->GetSizeX();
+						const auto TexHeight = Tex->GetSizeY();
+						const auto Pitch = GPixelFormats[Tex->GetPixelFormat()].BlockBytes * TexWidth;
+						RHIUpdateTexture2D(Tex->Resource->TextureRHI->GetTexture2D(), 0, FUpdateTextureRegion2D(0, 0, 0, 0, TexWidth, TexHeight), Pitch, reinterpret_cast<const uint8*>(&This->Colors[0]));
+					}
+				);
 			}
 		}
 	}
