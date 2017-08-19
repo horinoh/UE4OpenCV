@@ -10,6 +10,7 @@
 #pragma warning(disable : 4946)
 #pragma warning(disable : 4996)
 #pragma warning(disable : 4668)
+#pragma warning(disable : 4265)
 #include <opencv2/opencv.hpp>
 #pragma  warning(pop)
 #pragma pop_macro("check")
