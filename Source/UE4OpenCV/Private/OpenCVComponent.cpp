@@ -49,7 +49,6 @@ void UOpenCVComponent::BeginPlay()
 			{
 				cv::ocl::Device(Context.device(0));
 
-				//!< シンプルな OpenCL コード
 				//!< Simple OpenCL Code
 				const cv::String Code = "__kernel void main(__global uchar* dst, const int pitch, const int offset, const int rows, const int cols) {"
 					"const int2 uv = { get_global_id(0), get_global_id(1) };"
@@ -61,7 +60,6 @@ void UOpenCVComponent::BeginPlay()
 					"}";
 				const cv::ocl::ProgramSource ProgramSource(Code);
 
-				//!< OpenCL の ビルド
 				//!< Build OpenCL
 				const cv::String Buildopt = "";
 				cv::String Errmsg;
@@ -69,16 +67,13 @@ void UOpenCVComponent::BeginPlay()
 
 				const auto Width = Texture2D->GetSizeX();
 				const auto Height = Texture2D->GetSizeY();
-				//!< 結果格納用
 				//!< Result destination
 				const auto Mat = cv::UMat(Height, Width, CV_8U, cv::ACCESS_WRITE, cv::USAGE_ALLOCATE_DEVICE_MEMORY);
 
-				//!< OpenCL 関数名と引数
 				//!< OpenCL function name and arguments
 				cv::ocl::Kernel Kernel("main", Program);
 				Kernel.args(cv::ocl::KernelArg::ReadWrite(Mat));
 
-				//!< OpenCL の実行
 				//!< Execute OpenCL
 				size_t Threads[] = { Width, Height, 1 };
 				if (!Kernel.run(ARRAY_COUNT(Threads), Threads, nullptr, true))
@@ -88,7 +83,6 @@ void UOpenCVComponent::BeginPlay()
 
 				const auto Result = Mat.getMat(cv::ACCESS_READ);
 
-				//!< OpenCV の操作を加えてみる
 				//!< Add some OpenCV operations
 				cv::putText(Mat, cv::String("Hello OpenCV"), cv::Point(0, 255), CV_FONT_HERSHEY_PLAIN, 2.0, cv::Scalar(0, 127, 127));
 				cv::rectangle(Mat, cv::Point(64 + 5, 64 + 5), cv::Point(96 + 5, 96 + 5), cv::Scalar(0, 255, 0));
@@ -108,7 +102,6 @@ void UOpenCVComponent::BeginPlay()
 					}
 				}
 
-				//!< UTexture2Dを更新
 				//!< Update UTexture2D
 				ENQUEUE_UNIQUE_RENDER_COMMAND_TWOPARAMETER(UpdateTexture2D,
 					UOpenCVComponent*, This, this,
