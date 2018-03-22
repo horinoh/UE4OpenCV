@@ -7,7 +7,7 @@ class FOpenCVGameModuleImpl : public FDefaultGameModuleImpl
 public:
 	virtual void StartupModule()
 	{
-		const auto DllRoot = FPaths::GameContentDir() / TEXT("../ThirdParty/opencv/install/x64/vc14/bin/");
+		const auto DllRoot = FPaths::ProjectConfigDir() / TEXT("../ThirdParty/opencv/install/x64/vc14/bin/");
 #if UE_BUILD_DEBUG
 		const auto Configuration = "d";
 #else
