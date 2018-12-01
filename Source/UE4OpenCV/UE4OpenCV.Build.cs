@@ -6,6 +6,11 @@ using Tools.DotNETCommon;
 
 public class UE4OpenCV : ModuleRules
 {
+	 private string ThirdPartyPath
+    {
+        get { return Path.GetFullPath(Path.Combine(ModuleDirectory, "..", "..", "ThirdParty")); }
+    }
+
 	public UE4OpenCV(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore",
@@ -28,11 +33,6 @@ public class UE4OpenCV : ModuleRules
 
 		if(UnrealTargetPlatform.Win64 == Target.Platform)
 		{
-			FileReference FR;
-			UProjectInfo.TryGetProjectForTarget("UE4OpenCV", out FR);
-			RulesAssembly RA = RulesCompiler.CreateProjectRulesAssembly(FR);
-			var ModulePath = Path.GetDirectoryName(RA.GetModuleFileName(GetType().Name).CanonicalName);
-			var ThirdPartyPath = Path.GetFullPath(Path.Combine(ModulePath, "..", "..", "ThirdParty"));
 			var BasePath = Path.Combine(ThirdPartyPath, "opencv", "install");
 
 			var Configuration = (Target.Configuration == UnrealTargetConfiguration.Debug) ? "d" : "";
