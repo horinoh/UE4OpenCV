@@ -104,16 +104,14 @@ void UOpenCVComponent::BeginPlay()
 				}
 
 				//!< Update UTexture2D
-				ENQUEUE_UNIQUE_RENDER_COMMAND_TWOPARAMETER(UpdateTexture2D,
-					UOpenCVComponent*, This, this,
-					UTexture2D*, Tex, Texture2D,
+				ENQUEUE_RENDER_COMMAND(UpdateTexture2D)(
+					[Tex = Texture2D, this](FRHICommandListImmediate& RHICmdList)
 					{
 						const auto TexWidth = Tex->GetSizeX();
 						const auto TexHeight = Tex->GetSizeY();
 						const auto Pitch = GPixelFormats[Tex->GetPixelFormat()].BlockBytes * TexWidth;
-						RHIUpdateTexture2D(Tex->Resource->TextureRHI->GetTexture2D(), 0, FUpdateTextureRegion2D(0, 0, 0, 0, TexWidth, TexHeight), Pitch, reinterpret_cast<const uint8*>(&This->Colors[0]));
-					}
-				);
+						RHIUpdateTexture2D(Tex->Resource->TextureRHI->GetTexture2D(), 0, FUpdateTextureRegion2D(0, 0, 0, 0, TexWidth, TexHeight), Pitch, reinterpret_cast<const uint8*>(&Colors[0]));
+					});
 			}
 		}
 	}
